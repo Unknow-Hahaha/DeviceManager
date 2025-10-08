@@ -8,6 +8,25 @@
     <style></style>
   </head>
   <body>
+    <div id="login-screen">
+      <div class="login-box">
+        <h2>Naalonh Owner Tool</h2>
+        <div class="form-group">
+          <input type="password" id="access-key" required />
+          <label for="access-key">Enter Password</label>
+        </div>
+        <div class="show-password-checkbox">
+          <input
+            type="checkbox"
+            id="show-password"
+            onchange="toggleLoginPassword()" />
+          <label for="show-password">Show Password</label>
+        </div>
+        <button onclick="checkAccess()">✨ Unlock</button>
+        <p id="login-error"></p>
+      </div>
+    </div>
+
     <div class="container">
       <header>
         <h1>Device Hash Manager</h1>
@@ -95,4 +114,3 @@
     </script> -->
   </body>
 </html>
-

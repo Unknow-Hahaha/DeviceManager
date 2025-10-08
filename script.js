@@ -423,3 +423,32 @@ function toggleExpiryPopup(index, btn) {
   popup.setAttribute("data-popup-open", "true");
   popup.setAttribute("data-entry", index);
 }
+
+function checkAccess() {
+  const input = document.getElementById("access-key").value.trim();
+  const correctPassword = "LeapNaa@2708"; // 🛡️ Change to yours
+
+  if (input === correctPassword) {
+    document.getElementById("login-screen").style.display = "none";
+  } else {
+    document.getElementById("login-error").textContent =
+      "❌ Incorrect password!";
+  }
+}
+
+// ✨ Support Enter Key
+document.addEventListener("keydown", function (e) {
+  if (
+    e.key === "Enter" &&
+    document.getElementById("login-screen").style.display !== "none"
+  ) {
+    checkAccess();
+  }
+});
+
+function toggleLoginPassword() {
+  const input = document.getElementById("access-key");
+  const checkbox = document.getElementById("show-password");
+  input.type = checkbox.checked ? "text" : "password";
+}
+
