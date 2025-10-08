@@ -302,31 +302,30 @@ async function updateGist() {
         return;
     }
 
+    if (data.length === 0) {
+        alert("No data to update! Aborting to avoid overwriting gist with empty content.");
+        return;
+    }
+
+    // Generate the new content
+    let text = '';
+    data.forEach(entry => {
+        text += `DEVICE_HASH=${entry.DEVICE_HASH}\nUSER=${entry.USER}\nEXPIRY=${entry.EXPIRY}\n\n`;
+    });
+    text = text.trimEnd(); // remove last newline
+
     try {
-        // Fetch current content of license_pig.txt
-        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json',
-            }
-        });
-        const gist = await response.json();
-        const currentContent = gist.files['license_pig.txt'] ? gist.files['license_pig.txt'].content : '';
-
-        // Combine new data with existing content
-        let updatedContent = currentContent + '\n' + newData; // Add new entries or updates
-
-        // Send the updated content back to GitHub
         const updateResponse = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
                 'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json',
             },
             body: JSON.stringify({
                 files: {
                     'license_pig.txt': {
-                        content: updatedContent
+                        content: text
                     }
                 }
             })
@@ -334,8 +333,13 @@ async function updateGist() {
 
         if (updateResponse.ok) {
             alert('Gist updated successfully!');
+            hasUnsavedChanges = false;
+            updateStatus();
+            updateLastUpdateTime();
         } else {
-            alert('Failed to update Gist');
+            const errData = await updateResponse.json();
+            alert(`Failed to update Gist: ${errData.message}`);
+            console.error(errData);
         }
 
     } catch (error) {
@@ -343,6 +347,7 @@ async function updateGist() {
         alert('An error occurred while updating the Gist.');
     }
 }
+
 
 
 
@@ -430,4 +435,5 @@ function clearSearch() {
     document.getElementById('search-input').value = '';
     renderEntries(); // show all again
 }
+
 
