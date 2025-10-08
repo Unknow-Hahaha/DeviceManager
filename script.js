@@ -443,7 +443,3 @@ function clearSearch() {
     renderEntries(); // show all again
 }
 
-function logout() {
-    localStorage.removeItem('isLoggedIn');
-    window.location.href = 'login.html';
-}
