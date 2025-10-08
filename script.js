@@ -298,64 +298,52 @@ function exportData() {
 
 async function updateGist() {
     if (!GITHUB_TOKEN) {
-        showNotification('Please enter your GitHub token first', 'error');
-        document.getElementById('github-token').focus();
+        alert("GitHub token is missing!");
         return;
     }
-    
-    // Move the first entry ("NewUser") to the bottom if it exists
-    if (data.length > 1 && data[0].USER === "NewUser") {
-        const newUserEntry = data.shift(); // Remove the first entry
-        data.push(newUserEntry);  // Add it to the end of the array
-    }
 
-    let text = '';
-    data.forEach(entry => {
-        text += `DEVICE_HASH=${entry.DEVICE_HASH}\nUSER=${entry.USER}\nEXPIRY=${entry.EXPIRY}\n\n`;
-    });
-    
-    lastGistContent = text;
-    
     try {
-        showNotification('Updating Gist...', 'warning');
+        // Fetch current content of license_pig.txt
         const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json',
+            }
+        });
+        const gist = await response.json();
+        const currentContent = gist.files['license_pig.txt'] ? gist.files['license_pig.txt'].content : '';
+
+        // Combine new data with existing content
+        let updatedContent = currentContent + '\n' + newData; // Add new entries or updates
+
+        // Send the updated content back to GitHub
+        const updateResponse = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
                 'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
             },
             body: JSON.stringify({
                 files: {
                     'license_pig.txt': {
-                        content: text
+                        content: updatedContent
                     }
                 }
             })
         });
-        
-        if (response.ok) {
-            hasUnsavedChanges = false;
-            updateStatus();
-            updateLastUpdateTime();
-            renderEntries();
-            showNotification('Gist updated successfully!', 'success');
+
+        if (updateResponse.ok) {
+            alert('Gist updated successfully!');
         } else {
-            const error = await response.json();
-            showNotification(`Failed to update Gist: ${error.message}`, 'error');
-            console.error('GitHub API Error:', error);
-            
-            if (response.status === 401) {
-                GITHUB_TOKEN = '';
-                localStorage.removeItem('github_token');
-                document.getElementById('github-token').value = '';
-            }
+            alert('Failed to update Gist');
         }
+
     } catch (error) {
-        showNotification('Network error: ' + error.message, 'error');
-        console.error('Update error:', error);
+        console.error('Error updating Gist:', error);
+        alert('An error occurred while updating the Gist.');
     }
 }
+
 
 
 function updateStatus() {
